@@ -15,5 +15,6 @@ scan = scanner.PortScanner(args.target, args.ports, args.timeout)
 scan_results = scan.scan()
 
 # print the results to the console
+print (scan_results)
 for port, status in scan_results.items():
     print(f"Port {port} is {status}")
