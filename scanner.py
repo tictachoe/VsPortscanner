@@ -7,17 +7,8 @@ class PortScanner:
         self.target = target
         self.ports = self._parse_ports(ports)
         self.timeout = timeout
-    
-    # def _parse_target(self, target):
-    #     #resolved_target = networking.resolve_hostname(target)
-    #     resolved_target = target
-    #     if "/" in resolved_target:
-    #         return networking.generate_ips(target)
-    #     elif "," in resolved_target:
-    #         return [str(target) for target in target.split(",")]
-    #     else:
-    #         return str(resolved_target)
 
+    # Parses ports into a range of ports or a list
     def _parse_ports(self, ports):
         if "-" in ports:
             start_port, end_port = ports.split("-")
@@ -25,6 +16,8 @@ class PortScanner:
         else:
             return [int(port) for port in ports.split(",")]
     
+    # Scans the ports checking if they are open or closed
+    # if open it checks for the service
     def _scan_port(self, ip, port):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -38,6 +31,8 @@ class PortScanner:
         except:
             return "error"
 
+    # Function that creates the threads that run the _scan_port function
+    # uses a lambda function to update the dict with the results of the scan
     def scan(self):
         results = {}
         threads = []
@@ -49,7 +44,7 @@ class PortScanner:
                     threads.append(t)
                     t.start()
         else:
-            ip = self.target
+            ip = networking.resolve_hostname(self.target)
             for port in self.ports:
                 t = threading.Thread(target=lambda x, y: results.update({(str(x), y): self._scan_port(str(x), y)}), args=(ip, port))
                 threads.append(t)

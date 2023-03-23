@@ -1,1 +1,4 @@
 add the ability to let the user filter results
+show results only for ips that exist
+make more modular
+figure out whats happening with the results

@@ -17,6 +17,4 @@ scan_results = scan.scan()
 
 # print the results to the console
 results = results.ResultsProcessor(scan_results)
-print(results.scan())
-# for port, status in scan_results.items():
-#     print(f"Port {port} is {status}")
+print(results.scan_result())
