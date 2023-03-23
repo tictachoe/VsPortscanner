@@ -1,2 +1,1 @@
-add the ability to scan multiple ips
-add the ability to find out whats running on the ports
+add the ability to let the user filter results

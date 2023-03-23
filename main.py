@@ -1,5 +1,6 @@
 import argparse
 import scanner 
+import results
 
 # command line arguments
 parser = argparse.ArgumentParser(description='A port scanner')
@@ -15,6 +16,7 @@ scan = scanner.PortScanner(args.target, args.ports, args.timeout)
 scan_results = scan.scan()
 
 # print the results to the console
-print (scan_results)
-for port, status in scan_results.items():
-    print(f"Port {port} is {status}")
+results = results.ResultsProcessor(scan_results)
+print(results.scan())
+# for port, status in scan_results.items():
+#     print(f"Port {port} is {status}")

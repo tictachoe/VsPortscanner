@@ -3,20 +3,20 @@ import threading
 import networking
 
 class PortScanner:
-    def __init__(self, targets, ports, timeout):
-        self.targets = self._parse_targets(targets)
+    def __init__(self, target, ports, timeout):
+        self.target = target
         self.ports = self._parse_ports(ports)
         self.timeout = timeout
     
-    def _parse_targets(self, targets):
-        #resolved_targets = networking.resolve_hostname(targets)
-        resolved_targets = targets
-        if "/" in resolved_targets:
-            return networking.generate_ips(targets)
-        elif "," in resolved_targets:
-            return [str(target) for target in targets.split(",")]
-        else:
-            return str(resolved_targets)
+    # def _parse_target(self, target):
+    #     #resolved_target = networking.resolve_hostname(target)
+    #     resolved_target = target
+    #     if "/" in resolved_target:
+    #         return networking.generate_ips(target)
+    #     elif "," in resolved_target:
+    #         return [str(target) for target in target.split(",")]
+    #     else:
+    #         return str(resolved_target)
 
     def _parse_ports(self, ports):
         if "-" in ports:
@@ -25,29 +25,36 @@ class PortScanner:
         else:
             return [int(port) for port in ports.split(",")]
     
-    def _scan_port(self, port):
-        #print(self.targets)
-        for ip in self.targets:
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                    sock.settimeout(self.timeout)
-                    result = sock.connect_ex((ip, port))
-                    if result == 0:
-                        return "open"
-                    else:
-                        return "closed"
-            except:
-                return "error"
-    
+    def _scan_port(self, ip, port):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(self.timeout)
+                result = sock.connect_ex((ip, port))
+                if result == 0:
+                    service = socket.getservbyport(port)
+                    return "open ({})".format(service)
+                else:
+                    return "closed"
+        except:
+            return "error"
+
     def scan(self):
         results = {}
         threads = []
-        for ips in self.targets:
+        if "/" in self.target:
+            network = networking.generate_ips(self.target)
+            for ip in network:
+                for port in self.ports:
+                    t = threading.Thread(target=lambda x, y: results.update({(x, y): self._scan_port(x, y)}), args=(ip, port))
+                    threads.append(t)
+                    t.start()
+        else:
+            ip = self.target
             for port in self.ports:
-                t = threading.Thread(target=lambda x: results.update({x: self._scan_port(x)}), args=(port,))
+                t = threading.Thread(target=lambda x, y: results.update({(str(x), y): self._scan_port(str(x), y)}), args=(ip, port))
                 threads.append(t)
                 t.start()
-        
+
         for t in threads:
             t.join()
         
